@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<!--HTML5 doctype-->
+<html>
+
+<head>
+
+    <title>Login View Template</title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" type="text/css" href="lib/appframework/icons.css" />
+    <link rel="stylesheet" type="text/css" href="lib/appframework/af.ui.css" />
+    <script type="text/javascript" charset="utf-8" src="lib/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="lib/fastclick.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="lib/appframework/appframework.ui.min.js"></script>
+    <style>
+        #afui #listview .list li {padding:10px 20px 10px 10px}
+        .list-image {float:left;width:50px;height:50px}
+        .list-text {margin-left:60px;min-height:50px}        
+    </style> 
+
+           
+    <script src='cordova.js'></script>
+
+    <script>
+
+        $(document).ready(function(){
+
+            $("#mainview").bind("panelbeforeload", startApp);
+
+            $("#main").bind("panelbeforeload", startApp);
+
+            $("#listUsers").on("click", function(){
+                listarUsuarios();
+            });
+            // setup signin and signup button events
+            $("#login").on("click", function(){
+                signIn();
+            });
+
+            $("#return").on("click", function(){
+                $.afui.loadContent("#page1", null, null, "fade"); 
+            });
+
+            $("#register").on("click", function(){
+                signUp();
+            });
+
+        });
+
+
+
+        function signIn(){
+
+         console.log("Function signin");
+
+
+         var usuarioL = $("#usuarioL").val();
+         var senhaL = $("#senhaL").val();  
+
+         var wpost = {usuarioL: usuarioL, senhaL: senhaL};
+
+         $.ajax({
+             type: "POST",
+             crossDomain: true, 
+             url: "http://localhost/server_EventGame/validarUser.php",
+             data: wpost,
+             dataType: 'json',
+             timeout: 10000,
+                    success: function( data ) {
+                        if (data.id > 0) {
+                            
+                        var opts={
+                            message:"Logado com sucesso !",
+                            position:"tc",
+                            delay:2000,
+                            autoClose:true,
+                            type:"success"
+                        };
+
+                        $.afui.toast(opts);
+                        $.afui.loadContent("#main", null, null, "fade");
+
+                        }
+                        else {
+
+                        var opts={
+                            message:"Erro ao autenticar !",
+                            position:"tc",
+                            delay:2000,
+                            autoClose:true,
+                            type:"error"
+                        };
+                        $.afui.toast(opts);
+
+                        }
+                    }
+         })
+     }
+
+        function signUp(){  
+
+         console.log("Function Inicializada");
+
+         var nome = $("#nome").val();
+         var usuario = $("#usuario").val();
+         var senha = $("#senha").val();
+         var profissao = $("#profissao").val();
+         var situacao = "";
+
+    //validamos os campos com jquery mesmo.        
+
+         if (nome == "") {
+
+                var opts={
+                    message:"O Campo nome está vazio",
+                    position:"tc",
+                    delay:2000,
+                    autoClose:true,
+                    type:"error"
+                };
+                $.afui.toast(opts);
+                situacao = "Erro"; 
+         }
+         else if (usuario  == "") {
+
+                var opts={
+                    message:"O Campo usuario está vazio",
+                    position:"tc",
+                    delay:2000,
+                    autoClose:true,
+                    type:"error"
+                };
+                $.afui.toast(opts);
+                situacao = "Erro";
+         }
+         else if (senha  == "") {
+
+                var opts={
+                    message:"O Campo senha está vazio",
+                    position:"tc",
+                    delay:2000,
+                    autoClose:true,
+                    type:"error"
+                };
+                $.afui.toast(opts);
+                situacao = "Erro";
+         }
+
+         else {
+                situacao = "Sucesso";
+
+         }
+
+         if (situacao == "Sucesso") {
+
+         var wpost = {nome: nome, usuario: usuario, senha: senha, profissao: profissao};
+         //console.log(wpost);
+
+        $.ajax({
+                     type: "POST",
+                     crossDomain: true, 
+                     url: "http://localhost/server_EventGame/registerUser.php",
+                     data: wpost,
+                     dataType: 'json',
+                     timeout: 10000,
+                            success: function( data ) {
+                            console.log(data);
+                                if (data.confirmacao == 'erroCadastrar') {        
+                                var opts={
+                                    message:"Usuario Existente !",
+                                    position:"tc",
+                                    delay:2000,
+                                    autoClose:true,
+                                    type:"error"
+                                };
+
+                                $.afui.toast(opts);
+                            }
+                        
+                            else if (data.confirmacao == 'Cadastrado') {
+                                var opts={
+                                    message:"Cadastrado com sucesso !",
+                                    position:"tc",
+                                    delay:2000,
+                                    autoClose:true,
+                                    type:"success"
+                                };
+
+                                $.afui.toast(opts);      
+                                $.afui.loadContent("#page1", null, null, "fade");                          
+                        }        
+                    }
+
+                 })
+
+         }
+
+        }
+        //Mostramos os usuarios
+        function listarUsuarios() {
+            
+           $.getJSON('http://localhost/server_EventGame/listarUsuarios.php?search=',{
+                        //valor: id, 
+                        ajax: 'listarUsuarios'}, 
+                function(j){
+                        var dados = j; 
+                        console.log(dados);
+                        $.each(dados, function(total,valores) {
+                            var valor = valores;
+
+                            $('#resultado').append('<ul class="list">'+
+                                        '<li>'+
+                                           '<a href="#item1">'+
+                                                '<img class="list-image" src="http://localhost/AdminLTE-2.3.0/dist/img/avatar5.png"/>'+
+                                                '<div class="list-text"><b>' + valor.nome + '</b><br>' + valor.profissao + '</div>'+
+                                            '</a>'+
+                                        '</li>'+
+                                 '</ul>');
+                        });
+
+                        $("#listUsers").fadeIn(700, function(){
+                            window.setTimeout(function(){
+                                $('#listUsers').fadeOut();
+                            }, 1000);
+                        });
+
+                        //$('#resultado').html(show);         
+                       //console.log(conteudoDiv);
+                        
+
+                    });
+        
+        }
+
+
+        function startApp(){
+            // clears all back button history
+            $.afui.clearHistory();
+
+            // your app code here
+        }
+
+    </script>
+
+</head>
+
+<body>
+
+    <div id="splashscreen" class='ui-loader heavy'>
+        App Framework - Login View
+        <br>
+        <br>
+        <span class='ui-icon ui-icon-loading spin'></span>
+        <h1>Starting app</h1>
+    </div>
+
+    <div class="view" id="mainview">
+        <header>
+            <h1>EventGame</h1>
+        </header>
+
+        <div class="pages">
+
+            <!-- Welcome View -->
+            <div class="panel" id="page1" data-header="none" data-footer="none" selected="true">
+            <center><img src="img/eventLogo.jpg"></center>
+                <div style="text-align:center">
+                    <br>
+                    <br>
+                    <p>EventGame - Eretec 2016</p>
+                    <br>
+                    <br>
+                </div>
+                <ul class="list inset">
+                    <li><a href="#signin" class="icon user" style="text-align:center">Login</a></li>
+                    <li><a href="#signup" class="icon pencil" style="text-align:center">Cadastrar</a></li>
+                </ul>
+            </div>
+
+            <!-- Login View -->
+            <div class="panel" data-title="Login" id="signin" data-footer="none">
+                <div style="text-align:center">
+                    <br>
+                    <br>
+                    <p>Bem vindo ao EventGame</p>
+                    <br>
+                    <br>
+                </div>
+                <input name="usuario" id="usuarioL" type="text" placeholder="Usuario" />
+                <input name="senha"   id="senhaL" type="password" placeholder="Senha" />
+                <a class="button block" href="#" id="login">Login</a>
+
+            </div>
+
+            <!-- Register View -->
+            <div class="panel" data-title="Register" id="signup" data-footer="none">
+                <div style="text-align:center">
+                    <br>
+                    <br>
+                    <p>Faça seu cadastro para jogar !</p>
+                    <br>
+                    <br>
+                </div>
+                <input name="name" type="text" placeholder="Nome Completo"  id="nome" />
+                <input name="username" type="text"  placeholder="Usuário" id="usuario" />
+                <input name="senha" type="password" placeholder="Senha" id="senha" />
+                <input name="profissao" type="text" placeholder="Profissão" id="profissao" />
+                <a class="button block" href="#" id="register">Cadastrar</a>
+            </div>
+
+            <!-- Main App View Logado-->
+            <div class="panel" data-title="EventGame" id="main">
+                <a class="button block" href="#" id="listUsers" style="display: black;">Listar Usuários</a> 
+                <a class="button block" href="#" id="return" >Voltar</a> 
+                <div id="resultado"></div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>
